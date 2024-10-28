@@ -1,0 +1,82 @@
+version: '3.8'
+services:
+  frontend:
+    image: node:20.15.1
+    container_name: futbol_frontend
+    working_dir: /usr/src/app
+    ports:
+      - "80:8080"
+    volumes:
+      - ./futbol-front:/usr/src/app
+    command: sh -c "npm install && npm run build && npm run serve -- --host 0.0.0.0"  # Encadenar los comandos
+    tty: true  # Mantiene el contenedor en ejecución
+    networks:
+      - app-network
+
+  backend:
+    image: php:8.3-apache
+    container_name: futbol_backend
+    working_dir: /var/www/html
+    ports:
+      - "8080:80"
+    volumes:
+      - ./futbol-back:/var/www/html/futbol-back
+    command: /bin/bash -c "apt-get update && apt-get install -y libicu-dev && docker-php-ext-install intl mysqli && a2enmod headers && a2enmod rewrite && apache2-foreground"
+    networks:
+      - app-network
+
+  admindb:
+    image: python:3.9-slim
+    container_name: futbol-admindb
+    working_dir: /app
+    volumes:
+      - ./futbol-admindb:/app
+    ports:
+      - "8083:8083"
+    environment:
+      FLASK_ENV: development
+    command: >
+      sh -c "pip install flask flask-login mysql-connector-python && python app.py"
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:9.1.0
+    container_name: futbol_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: futbol_app
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./futbol-back/database-example.sql:/docker-entrypoint-initdb.d/database.sql
+    networks:
+      - app-network
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: futbol_jenkins
+    ports:
+      - "8081:8080"
+    networks:
+      - app-network
+
+  sonarqube:
+    #image: sonarqube
+    image: grundt/sonarqube-arm:lts
+    container_name: futbol_sonarqube
+    ports:
+      - "8082:9000"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+
