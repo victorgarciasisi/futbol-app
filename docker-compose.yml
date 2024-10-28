@@ -27,7 +27,7 @@ services:
 
   admindb:
     image: python:3.9-slim
-    container_name: futbol-admindb
+    container_name: futbol_admindb
     working_dir: /app
     volumes:
       - ./futbol-admindb:/app
