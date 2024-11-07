@@ -41,7 +41,7 @@ services:
       - app-network
 
   mysql:
-    image: mysql:9.1.0
+    image: mysql:8.4.3
     container_name: futbol_mysql
     ports:
       - "3306:3306"
@@ -65,8 +65,8 @@ services:
       - app-network
 
   sonarqube:
-    #image: sonarqube
-    image: grundt/sonarqube-arm:lts
+    image: sonarqube:9.9.7-community
+    #image: grundt/sonarqube-arm:lts
     container_name: futbol_sonarqube
     ports:
       - "8082:9000"
