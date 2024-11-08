@@ -8,7 +8,14 @@ services:
       - "80:8080"
     volumes:
       - ./futbol-front:/usr/src/app
-    command: sh -c "npm install && npm run build && npm run serve -- --host 0.0.0.0"  # Encadenar los comandos
+    ##command: sh -c "npm install && npm run build && npm run serve -- --host 0.0.0.0"  # Encadenar los comandos
+    command: >
+      sh -c "
+      curl -s http://checkip.amazonaws.com > /tmp/public_ip &&
+      sed -i \"s|axios.defaults.baseURL = 'http://.*';|axios.defaults.baseURL = 'http://$(cat /tmp/public_ip):8080/futbol-back/public/api';|\" /usr/src/app/src/main.js &&
+      npm install &&
+      npm run build &&
+      npm run serve -- --host 0.0.0.0" # Encadenar los comandos y obtenemos ip publica de aws ec2
     tty: true  # Mantiene el contenedor en ejecución
     networks:
       - app-network
